@@ -9,7 +9,7 @@ test-results/
 
 # Personal sound libraries must never be committed.
 library.json
-audio/
+/audio/
 *.wav
 *.mp3
 *.ogg
