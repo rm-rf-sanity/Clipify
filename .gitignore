@@ -1,0 +1,19 @@
+node_modules/
+dist/
+release/
+.local-test/
+test-results/
+*.log
+.env*
+!.env.example
+
+# Personal sound libraries must never be committed.
+library.json
+audio/
+*.wav
+*.mp3
+*.ogg
+*.flac
+*.m4a
+*.aac
+*.webm
