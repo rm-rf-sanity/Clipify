@@ -18,7 +18,7 @@
 
 ## Run on Windows
 
-Open `release/Clipify-0.2.0-win-x64.exe` for the portable build, or use the unpacked build at `release/win-unpacked/Clipify.exe` if available. No development tools are needed to run a packaged build.
+Open `release/Clipify-0.2.1-win-x64.exe` for the portable build, or use the unpacked build at `release/win-unpacked/Clipify.exe` if available. No development tools are needed to run a packaged build.
 
 Generated executables are excluded from the source repository. When cloning the project, run `npm run package` after installing dependencies to create your own Windows build. The Windows CI workflow also produces a downloadable executable artifact.
 
@@ -54,6 +54,8 @@ A normal Windows application cannot turn a physical microphone into an output de
 5. **Mix in your voice** is enabled by default and uses **System default microphone**. It starts automatically when virtual routing is connected. You can choose another physical microphone or turn voice mixing off; both choices are remembered. Keep the Windows default microphone set to a physical microphone rather than the cable’s recording endpoint to avoid feedback.
 
 These playback/recording names follow [VB-Audio’s reference manual](https://vb-audio.com/Cable/VBCABLE_ReferenceManual.pdf). Other virtual devices can work too; select the corresponding playback and recording endpoints.
+
+Clipify remembers device names alongside their IDs. If Windows changes an ID after a restart or driver update, Clipify reconnects only when the remembered name has one matching device. A missing or ambiguous match leaves the cable off so you can select it again; a different channel layout is not substituted.
 
 Use **Refresh audio devices** after connecting hardware or installing a driver. This requests microphone access briefly to expose device labels, then immediately stops that temporary stream. Output device selections, volumes, virtual routing, and the voice mixing switch are remembered and restored automatically on launch. Voice mixing defaults to enabled with the system default microphone, and capture starts only when virtual routing is connected. A missing cable leaves virtual routing and capture off and shows an explanation; speaker recovery is handled independently. Disconnecting the cable stops voice capture and disables cable routing.
 

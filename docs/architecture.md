@@ -29,6 +29,8 @@ Virtual routing requires an explicit non-default device ID. Saved output devices
 
 Muting voice stops capture immediately, before queued output configuration or disk persistence completes. It also cancels capture that is still starting.
 
+Output and microphone selections also retain their device labels. Before startup routing is configured, an unavailable ID can recover from one matching label of the same device kind. Matching ignores Windows instance counters such as `(2- ...)`, preserves channel-layout names, excludes system-default aliases, and refuses ambiguous matches. Legacy selections without a remembered label still require one manual reselection if their ID changes.
+
 ## Native boundary
 
 The Electron main process owns file dialogs, storage, hotkeys, window controls, and a single allowlisted external link. A sandboxed, context-isolated renderer has no Node.js integration. The preload exposes individual functions, not arbitrary IPC or filesystem APIs. Every IPC handler checks the sender, main frame, and origin. The renderer receives sound IDs and metadata, never arbitrary filesystem access.

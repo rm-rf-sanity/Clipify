@@ -2,6 +2,7 @@ const COLORS = ['violet', 'peach', 'mint', 'blue', 'pink', 'yellow'];
 const CATEGORIES = ['Essentials', 'Reactions', 'Music', 'Effects'];
 const DEFAULT_SETTINGS = Object.freeze({
   speakerId: 'default', cableId: '', microphoneId: 'default',
+  speakerLabel: '', cableLabel: '', microphoneLabel: '',
   speakerVolume: 0.75, cableVolume: 0.75, microphoneVolume: 0.8,
   monitorEnabled: true, cableEnabled: false, microphoneEnabled: true, overlap: false,
 });
@@ -27,7 +28,7 @@ function validateClip(input) {
 
 function validateSettings(input = {}) {
   const settings = { ...DEFAULT_SETTINGS };
-  for (const key of ['speakerId', 'cableId', 'microphoneId']) {
+  for (const key of ['speakerId', 'cableId', 'microphoneId', 'speakerLabel', 'cableLabel', 'microphoneLabel']) {
     if (typeof input[key] === 'string' && input[key].length <= 512) settings[key] = input[key];
   }
   for (const key of ['speakerVolume', 'cableVolume', 'microphoneVolume']) settings[key] = bounded(input[key], settings[key]);

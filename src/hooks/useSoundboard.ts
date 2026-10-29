@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AudioEngine, type ActiveClip, type ClipAnalysis } from '../audio/AudioEngine';
 import { restoreRouting } from '../audio/restoreRouting';
 import { syncMicrophone } from '../audio/syncMicrophone';
+import { reconcileDeviceIdentities } from '../audio/deviceIdentity';
 import type { Clip, LibraryState, Settings } from '../types';
 
 export function useSoundboard() {
@@ -44,7 +45,10 @@ export function useSoundboard() {
     setRoutingBusy(true);
     window.clipify.load().then(async data => {
       if (!mounted) return;
-      const restored = await restoreRouting(data.settings, settings => audio.configure(settings));
+      const found = await refreshDevices().catch(() => []);
+      if (!mounted) return;
+      const remembered = reconcileDeviceIdentities(data.settings, found);
+      const restored = await restoreRouting(remembered, settings => audio.configure(settings));
       const safe = { ...data, settings: restored.settings };
       if (mounted && restored.message) setError(restored.message);
       if (mounted) await window.clipify.saveSettings(safe.settings).catch(report);
@@ -54,7 +58,6 @@ export function useSoundboard() {
         if (mounted) setMicActive(audio.microphoneActive);
       }
     }).catch(report).finally(() => { if (mounted) setRoutingBusy(false); });
-    refreshDevices().catch(report);
     const unsubscribe = window.clipify.onHotkey(id => {
       if (id === '__stop__') { audio.stopAll(); return; }
       const clip = current.current?.clips.find(clip => clip.id === id);
@@ -135,7 +138,7 @@ export function useSoundboard() {
   }
   async function updateSettings(patch: Partial<Settings>) {
     if (!current.current || routingBusy) return;
-    const next = { ...current.current.settings, ...patch };
+    const next = reconcileDeviceIdentities({ ...current.current.settings, ...patch }, devices, current.current.settings);
     setRoutingBusy(true);
     try {
       await engine.current!.configure(next);

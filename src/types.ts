@@ -17,6 +17,9 @@ export interface Settings {
   speakerId: string;
   cableId: string;
   microphoneId: string;
+  speakerLabel?: string;
+  cableLabel?: string;
+  microphoneLabel?: string;
   microphoneEnabled: boolean;
   speakerVolume: number;
   cableVolume: number;

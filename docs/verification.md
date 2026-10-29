@@ -5,7 +5,7 @@ Local Windows verification completed on 2026-10-27:
 | Check | Result |
 | --- | --- |
 | Strict TypeScript and production renderer build | Passed |
-| Node storage and audio-engine suite | 36 passed |
+| Node storage and audio-engine suite | 45 passed |
 | npm dependency audit | No known vulnerabilities reported |
 | Real Electron desktop workflows, compact layout, and restart recovery | Passed |
 | Packaged Windows executable launch, library load, protocol, and sandbox | Passed |
@@ -24,6 +24,8 @@ Regression coverage includes stop commands during output-device changes, cancell
 Additional release checks cover immediate microphone mute while an output change is pending, cancellation of capture during mute, byte-budget eviction of decoded audio, and playback of files larger than the cache budget without retaining them.
 
 Startup routing tests cover restoring a saved enabled or disabled virtual route, preserving selected devices and levels, and independent recovery when the speaker, cable, or both are unavailable. The desktop suite also reloads the application with deterministic test sinks to verify that enabled virtual routing survives startup without relying on CI audio hardware.
+
+Device-identity regressions cover unique label recovery after ID changes, Windows instance counters, ambiguous names, channel-layout mismatches, recording/playback direction, default aliases, missing labels, and manual selection changes. The desktop suite simulates an unavailable old cable ID and verifies that the recovered ID and remembered voice mute persist after reload.
 
 Voice mixing tests verify the default enabled preference and system-default microphone selection, automatic capture only with a connected cable, preservation of a saved mute, and microphone failure reporting. Desktop startup/mute checks use a synthetic in-memory microphone stream and do not capture the machine's real microphone.
 

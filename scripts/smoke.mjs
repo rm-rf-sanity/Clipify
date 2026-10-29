@@ -115,7 +115,18 @@ try {
     await window.clipify.saveSettings({ ...data.settings, speakerId: 'saved-speaker', cableId: 'saved-cable', cableEnabled: true, microphoneEnabled: false });
   });
   await page.addInitScript(() => {
-    HTMLMediaElement.prototype.setSinkId = async function () {};
+    HTMLMediaElement.prototype.setSinkId = async function (id) {
+      if (sessionStorage.getItem('clipify-device-recovery-test') && id === 'stale-cable') throw new Error('Previous device ID is unavailable');
+    };
+    const enumerate = navigator.mediaDevices.enumerateDevices.bind(navigator.mediaDevices);
+    navigator.mediaDevices.enumerateDevices = async () => {
+      if (sessionStorage.getItem('clipify-enumeration-failure-test')) throw new Error('Devices are still initializing');
+      return sessionStorage.getItem('clipify-device-recovery-test') ? [
+        { deviceId: 'saved-speaker', kind: 'audiooutput', label: 'Test speakers' },
+        { deviceId: 'rotated-cable', kind: 'audiooutput', label: 'Test cable (3- Virtual Audio)' },
+        { deviceId: 'other-cable', kind: 'audiooutput', label: 'Test cable 16 Ch (3- Virtual Audio)' },
+      ] : enumerate();
+    };
     navigator.mediaDevices.getUserMedia = async () => {
       const context = new AudioContext();
       const stream = context.createMediaStreamDestination().stream;
@@ -149,6 +160,28 @@ try {
   await page.getByText('Microphone capture off', { exact: true }).waitFor();
   assert.equal(await page.getByRole('switch', { name: 'Mix physical microphone into virtual cable' }).getAttribute('aria-checked'), 'false');
   console.log('PASS: automatic system-default voice mixing and persisted manual mute (synthetic mic only)');
+
+  await page.evaluate(async () => {
+    const data = await window.clipify.load();
+    await window.clipify.saveSettings({ ...data.settings, cableId: 'stale-cable', cableLabel: 'Test cable (2- Virtual Audio)', cableEnabled: true });
+    sessionStorage.setItem('clipify-device-recovery-test', '1');
+  });
+  await page.reload();
+  await page.getByText('Sending to virtual cable', { exact: true }).waitFor();
+  const recoveredDevice = await page.evaluate(() => window.clipify.load());
+  assert.equal(recoveredDevice.settings.cableId, 'rotated-cable');
+  assert.equal(recoveredDevice.settings.cableLabel, 'Test cable (3- Virtual Audio)');
+  assert.equal(recoveredDevice.settings.cableEnabled, true);
+  assert.equal(recoveredDevice.settings.microphoneEnabled, false);
+  assert.equal(await page.locator('#cable-device').inputValue(), 'rotated-cable');
+  assert.equal(await page.getByRole('alert').count(), 0);
+  console.log('PASS: a changed cable ID recovers by its unique saved name without changing the voice mute');
+  await page.evaluate(() => sessionStorage.setItem('clipify-enumeration-failure-test', '1'));
+  await page.reload();
+  await page.getByText('Sending to virtual cable', { exact: true }).waitFor();
+  assert.equal((await page.evaluate(() => window.clipify.load())).settings.cableId, 'rotated-cable');
+  assert.equal(await page.locator('.sound-card').count(), 6);
+  console.log('PASS: a temporary device-list failure does not block opening the library');
   console.log('Screenshots: ' + root);
 } finally { await app.close(); }
 
